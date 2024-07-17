@@ -6,18 +6,13 @@ from geometry_msgs.msg import Vector3
 
 import random
 
+
 class TutorialPublisher(Node):
     def __init__(self):
-    super().__init__("tutorial_publisher")
-    self.publisher = self.create_publisher(
-        Vector3,
-        "/tutorial/vector3",
-        10
-    )
-    self.publisher_timer = self.create_timer(
-        1.0, self.run_node
-    )
-    self.get_logger().info("starting publisher node")
+        super().__init__("tutorial_publisher")
+        self.publisher = self.create_publisher(Vector3, "/tutorial/vector3", 10)
+        self.publisher_timer = self.create_timer(1.0, self.run_node)
+        self.get_logger().info("starting publisher node")
 
     def run_node(self):
         msg = Vector3()
@@ -40,5 +35,5 @@ class TutorialPublisher(Node):
             if rclpy.ok():
                 rclpy.shutdown()
 
-    if __name__=="__main__":
+    if __name__ == "__main__":
         main()
