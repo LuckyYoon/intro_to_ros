@@ -16,35 +16,44 @@ import numpy as np
 
 class bluerov2_sensors(Node):
     def __init__(self):
-        super().__init__("battery_subscriber")
-        self.battery = self.create_subscription(
-            BatteryState, "mavros/battery", self.batteryCallback, 10
+        qos_profile = QoSProfile(
+            history=QoSHistoryPolicy.KEEP_LAST,
+            depth=10,
+            reliability=QoSReliabilityPolicy.BEST_EFFORT,
+            durability=QoSDurabilityPolicy.VOLATILE,
         )
-        self.battery = BatteryState()
+        super().__init__("sensor_subscriber")
+        self.batterySubscription = self.create_subscription(
+            BatteryState, "mavros/battery", self.batteryCallback, qos_profile
+        )
         self.get_logger().info("starting battery subscriber node")
+        self.battery = BatteryState()
+        self.battery.voltage = 12.6
 
-        self.battery_timer = self.create_timer(5.0, self.voltageCheck())
-
-        super().__init__("imu_subscriber")
-        self.imu = self.create_subscription(
-            Imu, "mavros/imu/data", self.imuCallback, 10
+        self.imuSubscription = self.create_subscription(
+            Imu, "mavros/imu/data", self.imuCallback, qos_profile
         )
-        self.imu
+        self.imu = Imu()
         self.get_logger().info("starting imu subscriber node")
+
+        self.battery_timer = self.create_timer(5.0, self.voltageCheck)
 
     def batteryCallback(self, msg):
         self.battery = msg
-        self.get_logger().info(f"Battery Voltage\n\tx: ", self.battery.voltage)
+        self.get_logger().info(f"Battery Voltage\n\tx: {self.battery.voltage}")
 
     def imuCallback(self, msg):
-        self.data = msg
-        self.get_logger().info(f"IMU Time Stamp\n\tx: ", self.data.header.stamp.sec)
+        self.imu = msg
+        self.get_logger().info(f"IMU Time Stamp\n\tx: {self.imu.header.stamp.sec}")
 
     def voltageCheck(self):
+        print(self.battery.voltage)
         if self.battery.voltage < 12:
-            self.get_logger().info(f"Battery Voltage Low")
+            self.get_logger().info("Battery Voltage Critical")
+        elif self.battery.voltage < 12.6:
+            self.get_logger().info("Battery Voltage Low")
         else:
-            self.get_logger().info(f"Battery Voltage Good")
+            self.get_logger().info("Battery Voltage Good")
 
 
 def main(args=None):
