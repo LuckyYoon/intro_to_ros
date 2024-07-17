@@ -13,6 +13,36 @@ from rclpy.qos import (
 
 import numpy as np
 
+from mavros_msgs.msg import Mavlink
+
+# pack and unpack functions to deal with the bytearray
+from struct import pack, unpack
+
+
+# Topic callback
+def callback(data):
+    # Check if message id is valid (I'm using SCALED_PRESSURE
+    # and not SCALED_PRESSURE2)
+    if data.msgid == 29:
+        self.get_logger().info(rclpy.get_caller_id() + " Package: %s", data)
+        # Transform the payload in a python string
+        p = pack("QQ", *data.payload64)
+        # Transform the string in valid values
+        # https://docs.python.org/2/library/struct.html
+        time_boot_ms, press_abs, press_diff, temperature = unpack("Iffhxx", p)
+
+
+def listener():
+    rospy.init_node("listener", anonymous=True)
+
+    rospy.Subscriber("/mavlink/from", Mavlink, callback)
+
+    rospy.spin()
+
+
+if __name__ == "__main__":
+    listener()
+
 
 class bluerov2_sensors(Node):
     def __init__(self):
