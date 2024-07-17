@@ -66,7 +66,7 @@ def simulate_auv2_motion(T, alpha, L, l, mass, inertia, dt, t_final, x0, y0, the
         X[i] = X[i - 1] + np.cos(theta[i]) * v[i]
         Y[i] = Y[i - 1] + np.sin(theta[i]) * v[i]
 
-        return (t, X, Y, theta, v, omega, a)
+        return [X, Y]
 
 
 T = np.ndarray(shape=(4,), dtype=float, buffer=np.array([2.0, 1.0, 2.0, 1.0]))
